@@ -1,4 +1,4 @@
-package com.example.developer.odordivice;
+package ru.vassuv.fl.odordivice;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

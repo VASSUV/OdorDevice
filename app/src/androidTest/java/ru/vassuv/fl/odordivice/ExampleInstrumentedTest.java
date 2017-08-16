@@ -1,4 +1,4 @@
-package com.example.developer.odordivice;
+package ru.vassuv.fl.odordivice;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.developer.odordivice", appContext.getPackageName());
+        assertEquals("ru.vassuv.fl.odordivice", appContext.getPackageName());
     }
 }

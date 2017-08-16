@@ -1,4 +1,4 @@
-package com.example.developer.odordivice;
+package ru.vassuv.fl.odordivice;
 
 import org.junit.Test;
 
