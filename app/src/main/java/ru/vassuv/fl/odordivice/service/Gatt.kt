@@ -81,6 +81,10 @@ object Gatt {
         sendBroadcastLambda?.invoke(intent)
     }
 
+    fun close() {
+        mBluetoothGatt?.close()
+    }
+
 }
 
 val gattCallBack = object : BluetoothGattCallback() {

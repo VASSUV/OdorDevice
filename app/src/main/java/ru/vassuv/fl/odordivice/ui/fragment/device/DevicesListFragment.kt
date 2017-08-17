@@ -15,8 +15,6 @@ import ru.vassuv.fl.odordivice.presentation.view.device.DevicesListView
 import ru.vassuv.fl.odordivice.ui.component.DividerDecoration
 import android.support.v7.widget.LinearLayoutManager
 
-
-
 class DevicesListFragment : MvpAppCompatFragment(), DevicesListView, IFragment {
     override val type: FrmFabric
         get() = FrmFabric.DEVICE_LIST
@@ -43,6 +41,7 @@ class DevicesListFragment : MvpAppCompatFragment(), DevicesListView, IFragment {
         val recyclerView = rootView.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         recyclerView.adapter = presenter.getAdapter()
+        recyclerView.isNestedScrollingEnabled = false
         recyclerView.addItemDecoration(DividerDecoration(context, R.drawable.divider, 32))
         return rootView
     }
