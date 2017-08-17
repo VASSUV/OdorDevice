@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">OdorDivice</string>
     <string name="title_device_list">Список устройств</string>
+    <string name="unknown_device">Неизвестное устройство</string>
 </resources>

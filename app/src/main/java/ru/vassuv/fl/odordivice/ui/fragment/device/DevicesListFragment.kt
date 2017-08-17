@@ -13,6 +13,9 @@ import ru.vassuv.fl.odordivice.fabric.IFragment
 import ru.vassuv.fl.odordivice.presentation.presenter.device.DevicesListPresenter
 import ru.vassuv.fl.odordivice.presentation.view.device.DevicesListView
 import ru.vassuv.fl.odordivice.ui.component.DividerDecoration
+import android.support.v7.widget.LinearLayoutManager
+
+
 
 class DevicesListFragment : MvpAppCompatFragment(), DevicesListView, IFragment {
     override val type: FrmFabric
@@ -29,17 +32,22 @@ class DevicesListFragment : MvpAppCompatFragment(), DevicesListView, IFragment {
     @InjectPresenter
     lateinit var presenter: DevicesListPresenter
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        presenter.onCreate()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_devices_list, container, false)
         val recyclerView = rootView.recyclerView
+        recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         recyclerView.adapter = presenter.getAdapter()
         recyclerView.addItemDecoration(DividerDecoration(context, R.drawable.divider, 32))
         return rootView
     }
 
     override fun onStart() {
-
         super.onStart()
         presenter.onStart()
     }

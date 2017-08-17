@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:id="@+id/list_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white" />
 
     <TextView
+        android:id="@+id/deviceName"
         android:layout_width="match_parent"
-        android:padding="16dp"
         android:layout_height="wrap_content"
-        android:text="1231232112132132"/>
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:text="1231232112132132" />
+
+    <TextView
+        android:id="@+id/deviceAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
+        android:text="1231232112132132" />
 </LinearLayout>

@@ -1,240 +1,167 @@
 package ru.vassuv.fl.odordivice.presentation.presenter.device
 
+import android.bluetooth.*
 import android.support.v7.widget.RecyclerView
 import com.arellomobile.mvp.InjectViewState
 import com.arellomobile.mvp.MvpPresenter
 import ru.vassuv.fl.odordivice.App
 import ru.vassuv.fl.odordivice.presentation.view.device.DevicesListView
 import ru.vassuv.fl.odordivice.service.Bluetooth
-import ru.vassuv.fl.odordivice.service.Statistics
-import ru.vassuv.fl.odordivice.ui.adapter.DeviceListAdapter
+import ru.vassuv.fl.odordivice.ui.adapter.LeDeviceListAdapter
+import ru.vassuv.fl.odordivice.ui.adapter.LeDeviceListAdapter.IClickListener
+import ru.vassuv.fl.odordivice.service.Gatt
+
 
 @InjectViewState
 class DevicesListPresenter : MvpPresenter<DevicesListView>() {
 
-    val adapter = DeviceListAdapter()
+    val adapter = LeDeviceListAdapter()
+
+    fun onCreate() {
+        adapter.iClickListener = object : IClickListener {
+            override fun itemClick(device: BluetoothDevice) {
+                Gatt.connectDevice(device)
+            }
+        }
+
+        Bluetooth.check()
+        Bluetooth.scanCallBack = BluetoothAdapter.LeScanCallback { device, p1, p2 ->
+            adapter.addDevice(device)
+            adapter.notifyDataSetChanged()
+        }
+        Bluetooth.scanLeDevice(true)
+        Bluetooth.sendStat()
+    }
 
     fun onStart() {
-        App.log("Открыт список устройств")
-        Bluetooth.check()
-        adapter.notifyDataSetChanged()
     }
 
     fun onStop() {
-
     }
 
     fun getAdapter(): RecyclerView.Adapter<*>? {
         return adapter
     }
-
 }
 
 
-//class MainActivity : AppCompatActivity() {
+//class DeviceScanActivity : ListActivity() {
+////    private var mLeDeviceListAdapter: LeDeviceListAdapter? = null
+////    private var mBluetoothAdapter: BluetoothAdapter? = null
+////    private var mScanning: Boolean = false
+////    private var mHandler: Handler? = null
 //
-//    private var mBluetoothAdapter: BluetoothAdapter? = null
-//    private var mBluetoothLeScanner: BluetoothLeScanner? = null
-//
-//    private var mScanning: Boolean = false
-//
-//
-//    internal var listBluetoothDevice: MutableList<BluetoothDevice>
-//    internal var adapterLeScanResult: ListAdapter
-//
-//    private var mHandler: Handler? = null
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
+//    public override fun onCreate(savedInstanceState: Bundle?) {
 //        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
+////        actionBar!!.setTitle(R.string.title_devices)
+////        mHandler = Handler()
 //
-//        // Check if BLE is supported on the device.
+//        // Use this check to determine whether BLE is supported on the device.  Then you can
+//        // selectively disable BLE-related features.
 //        if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-//            Toast.makeText(this,
-//                    "BLUETOOTH_LE not supported in this device!",
-//                    Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show()
 //            finish()
 //        }
 //
-//        getBluetoothAdapterAndLeScanner()
+////        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
+////        // BluetoothAdapter through BluetoothManager.
+////        val bluetoothManager = getSystemService<Any>(Context.BLUETOOTH_SERVICE) as BluetoothManager
+////        mBluetoothAdapter = bluetoothManager.adapter
 //
 //        // Checks if Bluetooth is supported on the device.
 //        if (mBluetoothAdapter == null) {
-//            Toast.makeText(this,
-//                    "bluetoothManager.getAdapter()==null",
-//                    Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show()
 //            finish()
 //            return
 //        }
-//
-//        btnScan = findViewById(R.id.scan) as Button
-//        btnScan.setOnClickListener(object : View.OnClickListener() {
-//            fun onClick(v: View) {
+//    }
+
+//    fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        menuInflater.inflate(R.menu.main, menu)
+//        if (!mScanning) {
+//            menu.findItem(R.id.menu_stop).setVisible(false)
+//            menu.findItem(R.id.menu_scan).setVisible(true)
+//            menu.findItem(R.id.menu_refresh).setActionView(null)
+//        } else {
+//            menu.findItem(R.id.menu_stop).setVisible(true)
+//            menu.findItem(R.id.menu_scan).setVisible(false)
+//            menu.findItem(R.id.menu_refresh).setActionView(
+//                    R.layout.actionbar_indeterminate_progress)
+//        }
+//        return true
+//    }
+
+//    fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when (item.getItemId()) {
+//            R.id.menu_scan -> {
+//                mLeDeviceListAdapter!!.clear()
 //                scanLeDevice(true)
 //            }
-//        })
-//        listViewLE = findViewById(R.id.lelist) as ListView
-//
-//        listBluetoothDevice = ArrayList()
-//        adapterLeScanResult = ArrayAdapter(
-//                this, android.R.layout.simple_list_item_1, listBluetoothDevice)
-//        listViewLE.setAdapter(adapterLeScanResult)
-//        listViewLE.setOnItemClickListener(scanResultOnItemClickListener)
-//
-//        mHandler = Handler()
-//
-//    }
-//
-//    internal var scanResultOnItemClickListener: AdapterView.OnItemClickListener = object : AdapterView.OnItemClickListener {
-//
-//        fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-//            val device = parent.getItemAtPosition(position) as BluetoothDevice
-//
-//            val msg = device.address + "\n"
-//            +device.bluetoothClass.toString() + "\n"
-//            +getBTDevieType(device)
-//
-//            AlertDialog.Builder(this@MainActivity)
-//                    .setTitle(device.name)
-//                    .setMessage(msg)
-//                    .setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which -> })
-//                    .show()
-//
+//            R.id.menu_stop -> scanLeDevice(false)
 //        }
+//        return true
 //    }
-//
-//    private fun getBTDevieType(d: BluetoothDevice): String {
-//        var type = ""
-//
-//        when (d.type) {
-//            BluetoothDevice.DEVICE_TYPE_CLASSIC -> type = "DEVICE_TYPE_CLASSIC"
-//            BluetoothDevice.DEVICE_TYPE_DUAL -> type = "DEVICE_TYPE_DUAL"
-//            BluetoothDevice.DEVICE_TYPE_LE -> type = "DEVICE_TYPE_LE"
-//            BluetoothDevice.DEVICE_TYPE_UNKNOWN -> type = "DEVICE_TYPE_UNKNOWN"
-//            else -> type = "unknown..."
-//        }
-//
-//        return type
-//    }
-//
+
 //    override fun onResume() {
 //        super.onResume()
 //
+//        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
+//        // fire an intent to display a dialog asking the user to grant permission to enable it.
 //        if (!mBluetoothAdapter!!.isEnabled) {
 //            if (!mBluetoothAdapter!!.isEnabled) {
 //                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-//                startActivityForResult(enableBtIntent, RQS_ENABLE_BLUETOOTH)
+//                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
 //            }
 //        }
+//
+//        // Initializes list view adapter.
+//        mLeDeviceListAdapter = LeDeviceListAdapter()
+//        listAdapter = mLeDeviceListAdapter
+//        scanLeDevice(true)
 //    }
 //
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
-//
-//        if (requestCode == RQS_ENABLE_BLUETOOTH && resultCode == Activity.RESULT_CANCELED) {
+//        // User chose not to enable Bluetooth.
+//        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED) {
 //            finish()
 //            return
 //        }
-//
-//        getBluetoothAdapterAndLeScanner()
-//
-//        // Checks if Bluetooth is supported on the device.
-//        if (mBluetoothAdapter == null) {
-//            Toast.makeText(this,
-//                    "bluetoothManager.getAdapter()==null",
-//                    Toast.LENGTH_SHORT).show()
-//            finish()
-//            return
-//        }
-//
 //        super.onActivityResult(requestCode, resultCode, data)
 //    }
 //
-//    private fun getBluetoothAdapterAndLeScanner() {
-//        // Get BluetoothAdapter and BluetoothLeScanner.
-//        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//        mBluetoothAdapter = bluetoothManager.adapter
-//        mBluetoothLeScanner = mBluetoothAdapter!!.bluetoothLeScanner
-//
-//        mScanning = false
+//    override fun onPause() {
+//        super.onPause()
+//        scanLeDevice(false)
+//        mLeDeviceListAdapter!!.clear()
 //    }
 //
-//    /*
-//    to call startScan (ScanCallback callback),
-//    Requires BLUETOOTH_ADMIN permission.
-//    Must hold ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION permission to get results.
-//     */
+//    protected fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
+//        val device = mLeDeviceListAdapter!!.getDevice(position) ?: return
+//        val intent = Intent(this, DeviceControlActivity::class.java)
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.name)
+//        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.address)
+//        if (mScanning) {
+//            mBluetoothAdapter!!.stopLeScan(mLeScanCallback)
+//            mScanning = false
+//        }
+//        startActivity(intent)
+//    }
+//
 //    private fun scanLeDevice(enable: Boolean) {
 //        if (enable) {
-//            listBluetoothDevice.clear()
-//            listViewLE.invalidateViews()
-//
 //            // Stops scanning after a pre-defined scan period.
 //            mHandler!!.postDelayed(Runnable {
-//                mBluetoothLeScanner!!.stopScan(scanCallback)
-//                listViewLE.invalidateViews()
-//
-//                Toast.makeText(this@MainActivity,
-//                        "Scan timeout",
-//                        Toast.LENGTH_LONG).show()
-//
 //                mScanning = false
-//                btnScan.setEnabled(true)
+//                mBluetoothAdapter!!.stopLeScan(mLeScanCallback)
+//                invalidateOptionsMenu()
 //            }, SCAN_PERIOD)
 //
-//            //mBluetoothLeScanner.startScan(scanCallback);
-//
-//            //scan specified devices only with ScanFilter
-//            val scanFilter = ScanFilter.Builder()
-//                    .setServiceUuid(BluetoothLeService.ParcelUuid_GENUINO101_ledService)
-//                    .build()
-//            val scanFilters = ArrayList<ScanFilter>()
-//            scanFilters.add(scanFilter)
-//
-//            val scanSettings = ScanSettings.Builder().build()
-//
-//            mBluetoothLeScanner!!.startScan(scanFilters, scanSettings, scanCallback)
-//
 //            mScanning = true
-//            btnScan.setEnabled(false)
+//            mBluetoothAdapter!!.startLeScan(mLeScanCallback)
 //        } else {
-//            mBluetoothLeScanner!!.stopScan(scanCallback)
 //            mScanning = false
-//            btnScan.setEnabled(true)
+//            mBluetoothAdapter!!.stopLeScan(mLeScanCallback)
 //        }
-//    }
-//
-//    private val scanCallback = object : ScanCallback() {
-//        fun onScanResult(callbackType: Int, result: ScanResult) {
-//            super.onScanResult(callbackType, result)
-//
-//            addBluetoothDevice(result.getDevice())
-//        }
-//
-//        fun onBatchScanResults(results: List<ScanResult>) {
-//            super.onBatchScanResults(results)
-//            for (result in results) {
-//                addBluetoothDevice(result.getDevice())
-//            }
-//        }
-//
-//        override fun onScanFailed(errorCode: Int) {
-//            super.onScanFailed(errorCode)
-//            Toast.makeText(this@MainActivity,
-//                    "onScanFailed: " + errorCode.toString(),
-//                    Toast.LENGTH_LONG).show()
-//        }
-//
-//        private fun addBluetoothDevice(device: BluetoothDevice) {
-//            if (!listBluetoothDevice.contains(device)) {
-//                listBluetoothDevice.add(device)
-//                listViewLE.invalidateViews()
-//            }
-//        }
-//    }
-//
-//    companion object {
-//
-//        private val RQS_ENABLE_BLUETOOTH = 1
-//        private val SCAN_PERIOD: Long = 10000
+//        invalidateOptionsMenu()
 //    }
 //}
