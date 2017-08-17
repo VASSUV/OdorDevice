@@ -1,21 +1,17 @@
 package ru.vassuv.fl.odordivice.fabric
 
 import android.os.Bundle
+import ru.vassuv.fl.odordivice.ui.fragment.device.DevicesListFragment
 
 enum class FrmFabric {
     EMPTY,
     MAIN,
-    PICTURE;
+    DEVICE_LIST;
 
-    companion object {
-        fun getById(id: Int) = when (id) {
-            else -> EMPTY
+    fun create(bundle: Bundle): IFragment {
+        return when (this) {
+            DEVICE_LIST -> DevicesListFragment.newInstance(bundle)
+            else -> DevicesListFragment.newInstance(bundle)
         }
     }
-
-//    fun create(bundle: Bundle): IFragment {
-//        return when (this) {
-//            else ->
-//        }
-//    }
 }

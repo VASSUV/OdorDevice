@@ -31,20 +31,3 @@ class App(
         logger.debugMode = BuildConfig.DEBUG
     }
 }
-//
-//fun Throwable.parse(): String {
-//    App.logExc("ThrowableConverter", this)
-//    return when (this) {
-//        is UnknownHostException -> getMsg()
-//        is HttpException -> getMsg()
-//        else -> ""
-//    }
-//}
-//
-//class HttpException {
-//
-//}
-//
-//fun UnknownHostException.getMsg() = ""
-//
-//fun HttpException.getMsg() = ""
