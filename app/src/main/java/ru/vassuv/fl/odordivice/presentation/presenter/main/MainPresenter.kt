@@ -9,14 +9,14 @@ import com.arellomobile.mvp.MvpPresenter
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import ru.terrakok.cicerone.commands.Command
 import ru.vassuv.fl.odordivice.App
 import ru.vassuv.fl.odordivice.R
 import ru.vassuv.fl.odordivice.eventbus.PreloaderVisibilityEvent
 import ru.vassuv.fl.odordivice.fabric.FrmFabric
+import ru.vassuv.fl.odordivice.fabric.IFragment
 import ru.vassuv.fl.odordivice.presentation.view.main.MainView
 import ru.vassuv.fl.odordivice.router.CustomNavigator
-import ru.vassuv.fl.odordivice.router.OnBackScreenListener
-import ru.vassuv.fl.odordivice.router.OnNewRootScreenListener
 import java.io.Serializable
 
 @InjectViewState
@@ -27,38 +27,44 @@ class MainPresenter : MvpPresenter<MainView>() {
 
     fun onCreate(fragmentManager: FragmentManager, savedInstanceState: Bundle) {
 
-        App.router.onNewRootScreenListener = object : OnNewRootScreenListener {
-            override fun onChangeRootScreen(screenKey: String) = Unit
+        App.router.setOnNewRootScreenListener {
+            fun onChangeRootScreen(screenKey: String) = Unit
+        }
+        App.router.setOnBackScreenListener {
+            fun onBackScreen() = Unit
         }
 
-        App.router.onBackScreenListener = object : OnBackScreenListener {
-            override fun onBackScreen() = Unit
-        }
+        navigator = object : CustomNavigator(fragmentManager, R.id.content, OnChangeFragmentListener {
 
-        navigator = object : CustomNavigator(fragmentManager, R.id.content, { onChangeFragment() }) {
-            override fun openFragment(name: String) {
-                currentType = FrmFabric.valueOf(name)
-            }
+        }) {
 
-            override fun createFragment(screenKey: String, data: Bundle): Fragment {
+            override fun createFragment(screenKey: String?, data: Any?): Fragment {
                 viewState.setVisibilityPreloader(View.GONE)
-                return FrmFabric.valueOf(screenKey).create(data) as Fragment
+                return FrmFabric.valueOf(screenKey as String).create(data) as Fragment
             }
 
-            override fun showSystemMessage(message: String) = viewState.showMessage(message)
+            override fun showSystemMessage(message: String?, type: Int) = viewState.showMessage(message.toString())
+
+//            override fun openFragment(name: String) {
+//                currentType = FrmFabric.valueOf(name)
+//            }
 
             override fun exit() {
                 viewState.finish()
                 viewState.setVisibilityPreloader(View.GONE)
             }
-        }
 
+            override fun  getEnterAnimation(s : String, s1: String): Int = 0
+            override fun  getExitAnimation(s : String, s1: String): Int = 0
+            override fun  getPopEnterAnimation(s : String, s1: String): Int = 0
+            override fun  getPopExitAnimation(s : String, s1: String): Int = 0
+            }
         App.setNavigationHolder(navigator)
 
         if (savedInstanceState.isEmpty) {
             startFirstFragment()
         } else {
-            navigator.setScreenNames(savedInstanceState.getSerializable(STATE_SCREEN_NAMES) as MutableList<*>)
+            navigator.screenNames = savedInstanceState.getSerializable(STATE_SCREEN_NAMES) as MutableList<String>
         }
     }
 
@@ -88,7 +94,7 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     private fun startFirstFragment() {
-        App.router.navigateTo(FrmFabric.DEVICE_LIST.name)
+        App.router.newRootScreen(FrmFabric.DEVICE_LIST.name)
     }
 
     fun onSaveInstanceState(outState: Bundle?) {

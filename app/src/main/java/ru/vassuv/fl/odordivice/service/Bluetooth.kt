@@ -8,22 +8,13 @@ import ru.vassuv.fl.odordivice.App
 
 
 object Bluetooth {
-    // Stops scanning after 10 seconds.
     val REQUEST_ENABLE_BT = 1
-    // Stops scanning after 10 seconds.
     private val SCAN_PERIOD: Long = 10000
     private var mScanning: Boolean = false
     private var mHandler: Handler? = null
 
     var startActivityLambda: ((intent: Intent) -> Unit)? = null
-        set(value) {
-            field = value
-        }
-
     var scanCallBack: BluetoothAdapter.LeScanCallback? = null
-        set(value) {
-            field = value
-        }
 
     private val bluetoothManager: BluetoothManager = App.context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter

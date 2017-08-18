@@ -11,7 +11,8 @@ enum class FrmFabric {
     TIME_WORK,
     CHANGE_PASSWORD;
 
-    fun create(bundle: Bundle): IFragment {
+    fun create(data: Any?): IFragment {
+        val bundle: Bundle = data as? Bundle ?: Bundle()
         return when (this) {
             DEVICE_LIST -> DevicesListFragment.newInstance(bundle)
             PASSWORD -> PasswordFragment.newInstance(bundle)

@@ -31,9 +31,6 @@ object Gatt {
     val UUID_HEART_RATE_MEASUREMENT: UUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
 
     var sendBroadcastLambda: ((intent: Intent) -> Unit)? = null
-        set(value) {
-            field = value
-        }
 
     fun connectDevice(device: BluetoothDevice) {
         mBluetoothGatt = device.connectGatt(App.context, false, gattCallBack)
@@ -70,7 +67,8 @@ object Gatt {
         } else {
             // For all other profiles, writes the data formatted in HEX.
             val data = characteristic?.value
-            if (data != null && data.size > 0) {
+            App.log(TAG, String.format("Received: " + data))
+            if (data != null && data.isNotEmpty()) {
                 val stringBuilder = StringBuilder(data.size)
                 for (byteChar in data)
                     stringBuilder.append(String.format("%02X ", byteChar))
@@ -89,27 +87,26 @@ object Gatt {
 
 val gattCallBack = object : BluetoothGattCallback() {
     override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
+        App.log(Gatt.TAG, "onCharacteristicRead received: $status $characteristic")
         if (status == BluetoothGatt.GATT_SUCCESS) {
             Gatt.broadcastUpdate(Gatt.ACTION_DATA_AVAILABLE, characteristic);
-            App.log(Gatt.TAG, "onCharacteristicRead received: $status $characteristic");
         }
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             Gatt.broadcastUpdate(Gatt.ACTION_GATT_SERVICES_DISCOVERED);
-        } else {
-            App.log(Gatt.TAG, "onServicesDiscovered received: " + status);
         }
+        App.log(Gatt.TAG, "onServicesDiscovered received: " + status);
     }
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         val intentAction: String
+        App.log(Gatt.TAG, "onConnectionStateChange - " + gatt?.device?.address + ", " + gatt?.device?.name)
         if (newState === BluetoothProfile.STATE_CONNECTED) {
             intentAction = Gatt.ACTION_GATT_CONNECTED
             Gatt.mConnectionState = Gatt.STATE_CONNECTED
             Gatt.broadcastUpdate(intentAction)
-            App.log(Gatt.TAG, "Connected to GATT server.")
             App.log(Gatt.TAG, "Attempting to start service discovery:" + Gatt.mBluetoothGatt?.discoverServices())
             Gatt.readDevice()
         } else if (newState === BluetoothProfile.STATE_DISCONNECTED) {

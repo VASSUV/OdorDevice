@@ -15,6 +15,8 @@ import ru.vassuv.fl.odordivice.R
 import ru.vassuv.fl.odordivice.presentation.presenter.main.MainPresenter
 import ru.vassuv.fl.odordivice.presentation.view.main.MainView
 import ru.vassuv.fl.odordivice.service.Bluetooth
+import ru.vassuv.fl.odordivice.service.Gatt
+import ru.vassuv.fl.odordivice.service.Statistics
 import java.util.*
 
 
@@ -28,7 +30,12 @@ class MainActivity : MvpAppCompatActivity(), MainView {
         presenter.onCreate(supportFragmentManager, savedInstanceState ?: Bundle())
 
         Bluetooth.startActivityLambda = {
+            Statistics.send("startActivityLambda" + it.toString())
             startActivityForResult(it, Bluetooth.REQUEST_ENABLE_BT)
+        }
+
+        Gatt.sendBroadcastLambda = {
+            Statistics.send("sendBroadcastLambda" + it.toString())
         }
 
         Bluetooth.check()
