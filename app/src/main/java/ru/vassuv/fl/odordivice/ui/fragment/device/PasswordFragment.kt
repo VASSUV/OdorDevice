@@ -1,5 +1,6 @@
 package ru.vassuv.fl.odordivice.ui.fragment.device
 
+import android.bluetooth.BluetoothGattCharacteristic
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,16 @@ class PasswordFragment : MvpAppCompatFragment(), PasswordView, IFragment {
 
     @InjectPresenter
     lateinit var presenter: PasswordPresenter
+
+    override fun onStart() {
+        super.onStart()
+        presenter.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter.onStop()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {

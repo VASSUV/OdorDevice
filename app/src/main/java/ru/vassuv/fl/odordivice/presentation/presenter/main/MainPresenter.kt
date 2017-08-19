@@ -9,15 +9,17 @@ import com.arellomobile.mvp.MvpPresenter
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import ru.terrakok.cicerone.commands.Command
+import org.jetbrains.anko.bundleOf
 import ru.vassuv.fl.odordivice.App
 import ru.vassuv.fl.odordivice.R
 import ru.vassuv.fl.odordivice.eventbus.PreloaderVisibilityEvent
 import ru.vassuv.fl.odordivice.fabric.FrmFabric
 import ru.vassuv.fl.odordivice.fabric.IFragment
 import ru.vassuv.fl.odordivice.presentation.view.main.MainView
+import ru.vassuv.fl.odordivice.repository.constant.Field
 import ru.vassuv.fl.odordivice.router.CustomNavigator
 import java.io.Serializable
+
 
 @InjectViewState
 class MainPresenter : MvpPresenter<MainView>() {
@@ -25,7 +27,11 @@ class MainPresenter : MvpPresenter<MainView>() {
     private lateinit var navigator: CustomNavigator
     private var currentType = FrmFabric.EMPTY
 
+    private lateinit var fragmentManager: FragmentManager
+
     fun onCreate(fragmentManager: FragmentManager, savedInstanceState: Bundle) {
+
+        this.fragmentManager = fragmentManager
 
         App.router.setOnNewRootScreenListener {
             fun onChangeRootScreen(screenKey: String) = Unit
@@ -34,31 +40,29 @@ class MainPresenter : MvpPresenter<MainView>() {
             fun onBackScreen() = Unit
         }
 
-        navigator = object : CustomNavigator(fragmentManager, R.id.content, OnChangeFragmentListener {
-
-        }) {
-
+        navigator = object : CustomNavigator(fragmentManager, R.id.content, OnChangeFragmentListener(this::onChangeFragment)) {
             override fun createFragment(screenKey: String?, data: Any?): Fragment {
                 viewState.setVisibilityPreloader(View.GONE)
-                return FrmFabric.valueOf(screenKey as String).create(data) as Fragment
+                return FrmFabric.valueOf(screenKey as String)
+                        .create(data as? Bundle ?: bundleOf(Field.DATA to data.toString())) as Fragment
             }
-
-            override fun showSystemMessage(message: String?, type: Int) = viewState.showMessage(message.toString())
-
-//            override fun openFragment(name: String) {
-//                currentType = FrmFabric.valueOf(name)
-//            }
 
             override fun exit() {
                 viewState.finish()
                 viewState.setVisibilityPreloader(View.GONE)
             }
 
-            override fun  getEnterAnimation(s : String, s1: String): Int = 0
-            override fun  getExitAnimation(s : String, s1: String): Int = 0
-            override fun  getPopEnterAnimation(s : String, s1: String): Int = 0
-            override fun  getPopExitAnimation(s : String, s1: String): Int = 0
-            }
+//            override fun openFragment(name: String) {
+//                currentType = FrmFabric.valueOf(name)
+//            }
+
+            override fun showSystemMessage(message: String?, type: Int) = viewState.showMessage(message.toString())
+            override fun getEnterAnimation(s: String, s1: String): Int = 0
+            override fun getExitAnimation(s: String, s1: String): Int = 0
+            override fun getPopEnterAnimation(s: String, s1: String): Int = 0
+            override fun getPopExitAnimation(s: String, s1: String): Int = 0
+        }
+
         App.setNavigationHolder(navigator)
 
         if (savedInstanceState.isEmpty) {
@@ -84,13 +88,32 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     fun onChangeFragment() {
+        val newFragmentType = getCurrentFragment()?.type
+        if (currentType == newFragmentType || newFragmentType == null) return
+        currentType = newFragmentType
+
         when (currentType) {
             FrmFabric.DEVICE_LIST -> {
                 viewState.setTitle(R.string.title_device_list)
             }
+            FrmFabric.PASSWORD -> {
+                viewState.setTitle(R.string.title_password)
+            }
+            FrmFabric.CHANGE_PASSWORD -> {
+                viewState.setTitle(R.string.title_change_password)
+            }
+            FrmFabric.TIME_WORK -> {
+                viewState.setTitle(R.string.title_time_work)
+            }
+            FrmFabric.CONTROL -> {
+                viewState.setTitle(R.string.title_control)
+            }
             else -> {
             }
         }
+    }
+    fun getCurrentFragment() : IFragment?  {
+        return fragmentManager.findFragmentById(R.id.content) as IFragment?
     }
 
     private fun startFirstFragment() {

@@ -7,11 +7,11 @@ import ru.terrakok.cicerone.commands.Back;
 import ru.terrakok.cicerone.commands.BackTo;
 import ru.terrakok.cicerone.commands.Forward;
 import ru.terrakok.cicerone.commands.Replace;
+import ru.terrakok.cicerone.commands.SystemMessage;
 
 public class CustomRouter extends BaseRouter {
     private OnNewRootScreenListener onNewRootScreenListener;
     private OnBackScreenListener onBackScreenListener;
-    public static final int STANDARD_MESSAGE_TYPE = 0;
 
     public CustomRouter() {
         super();
@@ -58,12 +58,6 @@ public class CustomRouter extends BaseRouter {
         executeCommand(new BackTo(screenKey));
     }
 
-    public void backToWithResult(String screenKey, Bundle result) {
-        if (onBackScreenListener != null)
-            onBackScreenListener.onBackScreen();
-        executeCommand(new BackToWithResult(screenKey, result));
-    }
-
     public void exit() {
         if (onBackScreenListener != null)
             onBackScreenListener.onBackScreen();
@@ -73,7 +67,7 @@ public class CustomRouter extends BaseRouter {
     public void exitWithResult(Bundle bundle) {
         if (onBackScreenListener != null)
             onBackScreenListener.onBackScreen();
-        executeCommand(new ExitWithResult(bundle));
+        executeCommand(new BackWithResult(bundle));
     }
 
     public void exitWithMessage(String message, int type) {
@@ -83,10 +77,6 @@ public class CustomRouter extends BaseRouter {
 
     public void showSystemMessage(String message, int type) {
         executeCommand(new CustomSystemMessage(message, type));
-    }
-
-    public void showSystemMessage(String message) {
-        showSystemMessage(message, STANDARD_MESSAGE_TYPE);
     }
 
     public void setOnNewRootScreenListener(OnNewRootScreenListener onNewRootScreenListener) {

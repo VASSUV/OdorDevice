@@ -1,119 +1,131 @@
 package ru.vassuv.fl.odordivice.service
 
 import android.bluetooth.*
+import android.bluetooth.BluetoothGatt.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import ru.vassuv.fl.odordivice.App
-import java.util.*
-import android.bluetooth.BluetoothGattCharacteristic
 
 object Gatt {
     val TAG = "Gatt"
 
     val STATE_DISCONNECTED = 0
-    val STATE_CONNECTING = 1
+//    val STATE_CONNECTING = 1
     val STATE_CONNECTED = 2
 
-    val mBluetoothManager: BluetoothManager? = null
-    val mBluetoothAdapter: BluetoothAdapter? = null
-    val mBluetoothDeviceAddress: String? = null
     var mBluetoothGatt: BluetoothGatt? = null
     var characteristic: BluetoothGattCharacteristic? = null
-    var enabled: Boolean = false
+    lateinit var device: BluetoothDevice
+
+    var gattStateChangeLambda: ((b: Boolean) -> Unit)? = null
 
     var mConnectionState = STATE_DISCONNECTED
-
     val ACTION_GATT_CONNECTED = "com.example.bluetooth.le.ACTION_GATT_CONNECTED"
     val ACTION_GATT_DISCONNECTED = "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED"
     val ACTION_GATT_SERVICES_DISCOVERED = "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED"
     val ACTION_DATA_AVAILABLE = "com.example.bluetooth.le.ACTION_DATA_AVAILABLE"
+
     val EXTRA_DATA = "com.example.bluetooth.le.EXTRA_DATA"
 
-    val UUID_HEART_RATE_MEASUREMENT: UUID = UUID.fromString("00002a29-0000-1000-8000-00805f9b34fb")
+    var sendBroadcastLambda: ((intent: BroadcastReceiver) -> Unit)? = null
 
-    var sendBroadcastLambda: ((intent: Intent) -> Unit)? = null
+    private var mConnected: Boolean = false
 
-    fun connectDevice(device: BluetoothDevice) {
+    val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            when (action) {
+                ACTION_GATT_CONNECTED -> mConnected = true
+                ACTION_GATT_DISCONNECTED -> mConnected = false
+            //                clearUI();
+                ACTION_GATT_SERVICES_DISCOVERED -> {
+                    //                displayGattServices(getSupportedGattServices());
+                }
+                ACTION_DATA_AVAILABLE -> {
+                    //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+                }
+            }
+        }
+    }
+
+    fun connectDevice() {
         mBluetoothGatt = device.connectGatt(App.context, false, gattCallBack)
     }
 
-    fun readDevice() {
+    fun readDevice(bytes: ByteArray) {
+        App.log("readDevice: " + bytes.toString())
+        characteristic = mBluetoothGatt?.getService(device.uuids[0].uuid)?.characteristics?.get(0)
+        characteristic?.value = bytes
         mBluetoothGatt?.readCharacteristic(characteristic)
     }
 
-    fun writeDevice(characteristic: BluetoothGattCharacteristic) {
-        mBluetoothGatt?.writeCharacteristic(characteristic)
-    }
+//    fun writeDevice(characteristic: BluetoothGattCharacteristic) {
+//        App.log(Gatt.TAG, "writeDevice: " + characteristic.value)
+//        mBluetoothGatt?.writeCharacteristic(characteristic)
+//    }
 
-    fun broadcastUpdate(intentAction: String) {
-        sendBroadcastLambda?.invoke(Intent(intentAction));
+    fun broadcastUpdate() {
+        sendBroadcastLambda?.invoke(receiver)
     }
 
     fun broadcastUpdate(action: String, characteristic: BluetoothGattCharacteristic?) {
         val intent = Intent(action)
+        val data = characteristic?.value
 
-        if (UUID_HEART_RATE_MEASUREMENT.equals(characteristic?.uuid)) {
-            val flag = characteristic?.properties
-            var format = -1
-            if (flag?.and(0x01) != 0) {
-                format = BluetoothGattCharacteristic.FORMAT_UINT16
-                App.log(TAG, "Heart rate format UINT16.")
-            } else {
-                format = BluetoothGattCharacteristic.FORMAT_UINT8
-                App.log(TAG, "Heart rate format UINT8.")
-            }
-            val heartRate = characteristic?.getIntValue(format, 1)!!
-            App.log(TAG, String.format("Received heart rate: %d", heartRate))
-            intent.putExtra(EXTRA_DATA, heartRate.toString())
-        } else {
-            // For all other profiles, writes the data formatted in HEX.
-            val data = characteristic?.value
-            App.log(TAG, String.format("Received: " + data))
-            if (data != null && data.isNotEmpty()) {
-                val stringBuilder = StringBuilder(data.size)
-                for (byteChar in data)
-                    stringBuilder.append(String.format("%02X ", byteChar))
-                intent.putExtra(EXTRA_DATA, String(data) + "\n" +
-                        stringBuilder.toString())
-            }
+        App.log(TAG, String.format("Received: " + data))
+
+        if (data != null && data.isNotEmpty()) {
+            val stringBuilder = StringBuilder(data.size)
+            for (byteChar in data)
+                stringBuilder.append(String.format("%02X ", byteChar))
+            intent.putExtra(EXTRA_DATA, """${String(data)} $stringBuilder""")
         }
-        sendBroadcastLambda?.invoke(intent)
+
+        sendBroadcastLambda?.invoke(receiver)
     }
 
     fun close() {
         mBluetoothGatt?.close()
     }
 
-}
-
-val gattCallBack = object : BluetoothGattCallback() {
-    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
-        App.log(Gatt.TAG, "onCharacteristicRead received: $status $characteristic")
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            Gatt.broadcastUpdate(Gatt.ACTION_DATA_AVAILABLE, characteristic);
-        }
+    fun take(device: BluetoothDevice) {
+        this.device = device
     }
 
-    override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            Gatt.broadcastUpdate(Gatt.ACTION_GATT_SERVICES_DISCOVERED);
+    val gattCallBack = object : BluetoothGattCallback() {
+        override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
+            App.log(TAG, "onCharacteristicRead received: $status $characteristic")
+            if (status == GATT_SUCCESS) {
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic)
+            }
         }
-        App.log(Gatt.TAG, "onServicesDiscovered received: " + status);
-    }
 
-    override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        val intentAction: String
-        App.log(Gatt.TAG, "onConnectionStateChange - " + gatt?.device?.address + ", " + gatt?.device?.name)
-        if (newState === BluetoothProfile.STATE_CONNECTED) {
-            intentAction = Gatt.ACTION_GATT_CONNECTED
-            Gatt.mConnectionState = Gatt.STATE_CONNECTED
-            Gatt.broadcastUpdate(intentAction)
-            App.log(Gatt.TAG, "Attempting to start service discovery:" + Gatt.mBluetoothGatt?.discoverServices())
-            Gatt.readDevice()
-        } else if (newState === BluetoothProfile.STATE_DISCONNECTED) {
-            intentAction = Gatt.ACTION_GATT_DISCONNECTED
-            Gatt.mConnectionState = Gatt.STATE_DISCONNECTED
-            App.log(Gatt.TAG, "Disconnected from GATT server.")
-            Gatt.broadcastUpdate(intentAction)
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            if (status == GATT_SUCCESS) {
+                broadcastUpdate()
+            }
+            App.log(TAG, "onServicesDiscovered received: " + status)
+        }
+
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+//            val intentAction: String
+            App.log(TAG, "onConnectionStateChange - " + gatt?.device?.address + ", " + gatt?.device?.name)
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+//                intentAction = ACTION_GATT_CONNECTED
+                mConnectionState = STATE_CONNECTED
+                broadcastUpdate()
+                App.log(TAG, "Attempting to start service discovery:" + mBluetoothGatt?.discoverServices())
+                gattStateChangeLambda?.invoke(true)
+//            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+//                intentAction = ACTION_GATT_DISCONNECTED
+                mConnectionState = STATE_DISCONNECTED
+                App.log(TAG, "Disconnected from GATT server.")
+                broadcastUpdate()
+                gattStateChangeLambda?.invoke(false)
+            } else {
+                gattStateChangeLambda?.invoke(false)
+            }
         }
     }
 }

@@ -11,15 +11,14 @@ enum class FrmFabric {
     TIME_WORK,
     CHANGE_PASSWORD;
 
-    fun create(data: Any?): IFragment {
-        val bundle: Bundle = data as? Bundle ?: Bundle()
+    fun create(data: Bundle?): IFragment {
         return when (this) {
-            DEVICE_LIST -> DevicesListFragment.newInstance(bundle)
-            PASSWORD -> PasswordFragment.newInstance(bundle)
-            CONTROL -> ControlFragment.newInstance(bundle)
-            TIME_WORK -> TimeWorkFragment.newInstance(bundle)
-            CHANGE_PASSWORD -> ChangePasswordFragment.newInstance(bundle)
-            else -> DevicesListFragment.newInstance(bundle)
+            DEVICE_LIST -> DevicesListFragment.newInstance(data ?: Bundle())
+            PASSWORD -> PasswordFragment.newInstance(data ?: Bundle())
+            CONTROL -> ControlFragment.newInstance(data ?: Bundle())
+            TIME_WORK -> TimeWorkFragment.newInstance(data ?: Bundle())
+            CHANGE_PASSWORD -> ChangePasswordFragment.newInstance(data ?: Bundle())
+            else -> DevicesListFragment.newInstance(data ?: Bundle())
         }
     }
 }

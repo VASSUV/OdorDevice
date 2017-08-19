@@ -6,5 +6,5 @@ import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 
 @StateStrategyType(SingleStateStrategy::class)
 interface DevicesListView : MvpView {
-
+    fun setRefreshVisibility(visible: Boolean)
 }

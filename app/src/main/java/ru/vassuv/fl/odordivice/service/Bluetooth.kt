@@ -1,9 +1,15 @@
 package ru.vassuv.fl.odordivice.service
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
+import org.jetbrains.anko.coroutines.experimental.bg
 import ru.vassuv.fl.odordivice.App
 
 
@@ -11,7 +17,6 @@ object Bluetooth {
     val REQUEST_ENABLE_BT = 1
     private val SCAN_PERIOD: Long = 10000
     private var mScanning: Boolean = false
-    private var mHandler: Handler? = null
 
     var startActivityLambda: ((intent: Intent) -> Unit)? = null
     var scanCallBack: BluetoothAdapter.LeScanCallback? = null
@@ -27,21 +32,22 @@ object Bluetooth {
         }
     }
 
-    fun scanLeDevice(enable: Boolean) {
-        if (enable) {
-            if (mHandler == null) mHandler = Handler()
-
-            mHandler!!.postDelayed({
+    fun scanLeDevice(enable: Boolean, scanFinish : () -> Unit) = async(UI) {
+        bg {
+            if (enable) {
+                mScanning = true
+                bluetoothAdapter.startLeScan(scanCallBack)
+            } else {
                 mScanning = false
                 bluetoothAdapter.stopLeScan(scanCallBack)
-            }, SCAN_PERIOD)
-
-            mScanning = true
-            bluetoothAdapter.startLeScan(scanCallBack)
-        } else {
-            mScanning = false
-            bluetoothAdapter.stopLeScan(scanCallBack)
-        }
+            }
+            if (enable) {
+                Thread.sleep(SCAN_PERIOD)
+                mScanning = false
+                bluetoothAdapter.stopLeScan(scanCallBack)
+            }
+        }.await()
+        scanFinish()
     }
 
     fun sendStat() {

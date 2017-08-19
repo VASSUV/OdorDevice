@@ -2,4 +2,10 @@
     <string name="app_name">OdorDivice</string>
     <string name="title_device_list">Список устройств</string>
     <string name="unknown_device">Неизвестное устройство</string>
+    <string name="title_password">Пароль</string>
+    <string name="title_control">Управление</string>
+    <string name="title_time_work">Режим работы</string>
+    <string name="title_change_password">Изменение пароля</string>
+    <string name="pull_down_to_refresh">Потяните вниз,\nчтобы обновить список устройств</string>
+    <string name="pull_down_to_refresh_description">Если Ваш список до сих пор пустой,\nподойдите ближе к устройству.\n\nВозможно что устройство выключено\nили находится слишком далеко</string>
 </resources>

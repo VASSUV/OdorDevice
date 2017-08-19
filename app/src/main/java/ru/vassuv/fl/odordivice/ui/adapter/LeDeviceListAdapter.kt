@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import ru.vassuv.fl.odordivice.R
 
-class LeDeviceListAdapter : RecyclerView.Adapter<LeDeviceListAdapter.Holder>() {
+class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    val BLANK_TYPE = 0
+    val ITEM_TYPE = 1
 
     internal var iClickListener: IClickListener? = null
         set(value) {
@@ -17,20 +19,29 @@ class LeDeviceListAdapter : RecyclerView.Adapter<LeDeviceListAdapter.Holder>() {
 
     private val mLeDevices: ArrayList<BluetoothDevice> = ArrayList<BluetoothDevice>()
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): Holder {
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+//        if (viewType == BLANK_TYPE)
+//            return EazyHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_refresh_blank, parent, false))
         return Holder(LayoutInflater.from(parent?.context).inflate(R.layout.item_device, parent, false))
     }
 
-    override fun getItemCount() = mLeDevices.size
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0 && mLeDevices.size == 0) BLANK_TYPE else ITEM_TYPE
+    }
 
-    override fun onBindViewHolder(holder: Holder?, position: Int) {
+    override fun getItemCount() = 3//if (mLeDevices.size == 0) 1 else mLeDevices.size
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+        return
+        if (position == 0 && mLeDevices.size == 0 || holder !is Holder?) return
+
         val device = mLeDevices[position]
         val deviceName = device.name
         if (deviceName != null && deviceName.isNotEmpty())
             holder?.deviceName!!.text = deviceName
         else
             holder?.deviceName!!.setText(R.string.unknown_device)
-        holder.deviceAddress!!.text = device.address
+        holder?.deviceAddress!!.text = device.address
 
     }
 
@@ -60,13 +71,13 @@ class LeDeviceListAdapter : RecyclerView.Adapter<LeDeviceListAdapter.Holder>() {
             deviceName = itemView?.findViewById(R.id.deviceName)
             deviceAddress = itemView?.findViewById(R.id.deviceAddress)
             itemView?.findViewById<View>(R.id.list_item)?.setOnClickListener {
-                iClickListener?.itemClick(mLeDevices[layoutPosition])
+                iClickListener?.itemClick(/*mLeDevices[layoutPosition]*/null)
             }
         }
 
     }
 
     interface IClickListener {
-        fun itemClick(device: BluetoothDevice)
+        fun itemClick(device: BluetoothDevice?)
     }
 }
