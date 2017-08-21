@@ -7,6 +7,11 @@ import android.view.View
 import com.arellomobile.mvp.InjectViewState
 import com.arellomobile.mvp.MvpPresenter
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -33,7 +38,7 @@ class DevicesListPresenter : MvpPresenter<DevicesListView>() {
         visibilityLoader = true
         adapter.iClickListener = object : IClickListener {
             override fun itemClick(device: BluetoothDevice?) {
-                if (device == null) {
+                if (device != null) {
                     BLibrary.device = device
                     App.router.navigateTo(FrmFabric.PASSWORD.name)
                 } else {
@@ -79,6 +84,7 @@ class DevicesListPresenter : MvpPresenter<DevicesListView>() {
     fun onEvent(event: FindNewDeviceEvent) {
         adapter.addDevice(event.device)
         adapter.notifyDataSetChanged()
+        println("--------------------------------------")
     }
 
     fun onStop() {
@@ -96,7 +102,9 @@ class DevicesListPresenter : MvpPresenter<DevicesListView>() {
         isAbortScanning = true
         BLibrary.service.stopScan()
 
-        BLibrary.service.startScan()
+        async(newSingleThreadContext("scanDevice")) {
+            BLibrary.service.startScan()
+        }
     }
 
     fun getAdapter() = adapter

@@ -50,7 +50,7 @@ class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun addDevice(device: BluetoothDevice) {
         if (!mLeDevices.contains(device)) {
-            Statistics.send("Найден: ", device)
+//            Statistics.send("Найден: ", device)
             mLeDevices.add(device)
         }
     }

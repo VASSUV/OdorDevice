@@ -10,7 +10,6 @@ import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothStatus
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import ru.vassuv.fl.odordivice.App
-import ru.vassuv.fl.odordivice.fabric.FrmFabric
 import ru.vassuv.fl.odordivice.presentation.view.device.PasswordView
 import ru.vassuv.fl.odordivice.service.BLibrary
 import ru.vassuv.fl.odordivice.service.Statistics
@@ -29,9 +28,12 @@ class PasswordPresenter : MvpPresenter<PasswordView>() {
             }
 
             override fun onStatusChange(status: BluetoothStatus) {
-                val message = "onStatusChange - status:" + status.name
-                Statistics.send(message)
-                App.router.showSystemMessage(message, 0)
+                if (status == BluetoothStatus.CONNECTING) {
+                    val message = "onStatusChange - status:" + status.name
+                    Statistics.send(message)
+                    App.router.showSystemMessage(message, 0)
+                    BLibrary.service.write(byteArrayOf(0x02))
+                }
             }
 
             override fun onDeviceName(deviceName: String) {
@@ -55,7 +57,6 @@ class PasswordPresenter : MvpPresenter<PasswordView>() {
     }
 
     fun onStart() {
-        BLibrary.connect()
     }
 
     fun onStop() {
@@ -64,8 +65,16 @@ class PasswordPresenter : MvpPresenter<PasswordView>() {
 
     fun getOnClickListener(): View.OnClickListener? = View.OnClickListener {
         if (isPasswordValid()) {
-            BLibrary.service.write(pass.toByteArray())
-            App.router.replaceScreen(FrmFabric.CONTROL.name)
+            println("--- status - " + BLibrary.service.status)
+            BLibrary.connect()
+            println("--- status2 - " + BLibrary.service.status)
+            BLibrary.service.write(byteArrayOf(0x01))
+            println("--- status4 - " + BLibrary.service.status)
+            BLibrary.writer.write(0x01.toChar()/*pass.toByteArray()*/)
+            println("--- status5 - " + BLibrary.service.status)
+            BLibrary.writer.writeln("2s1df2")
+            println("--- status6 - " + BLibrary.service.status)
+//            App.router.replaceScreen(FrmFabric.CONTROL.name)
         } else {
             viewState.requestPasswordView()
             launch(CommonPool) {

@@ -5,12 +5,15 @@ import android.os.Build.MANUFACTURER
 import android.os.Build.MODEL
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothConfiguration
 import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothService
+import com.github.douglasjunior.bluetoothclassiclibrary.BluetoothWriter
 import com.github.douglasjunior.bluetoothlowenergylibrary.BluetoothLeService
 import ru.vassuv.fl.odordivice.App
 import java.util.*
 
+
 object BLibrary {
     var service: BluetoothService
+    lateinit var writer: BluetoothWriter
 
     var device: BluetoothDevice? = null
 
@@ -23,34 +26,26 @@ object BLibrary {
         config.deviceName = """$MANUFACTURER $MODEL"""
         config.callListenersInMainThread = true
 
-// Bluetooth Classic
-        config.uuid = null // UUID.randomUUID() //.fromString("00000000-0000-1000-8000-00805F9B34FB")
-
-// Bluetooth LE
-//        config.uuidService = UUID.fromString("00000000-0000-1000-8000-00805F9B34FB")
-        config.uuidService = UUID.randomUUID()
-//        config.uuidCharacteristic = UUID.fromString("bef8d6c9-9c21-4c9e-b632-bd58c1009f9f")
+        config.uuid = null
+        config.uuidService = UUID.fromString("6cb025d9-eb74-4358-b442-dd6f51faec6f")
         config.uuidCharacteristic = UUID.randomUUID()
+//        config.uuidCharacteristic = UUID.randomUUID()
 
-        BluetoothService.init(config)
+        config.transport = 0 // Only for dual-mode devices
 
-        service = BluetoothService.getDefaultInstance()
+        BluetoothLeService.init(config)
+
+        service = BluetoothLeService.getDefaultInstance()
     }
 
     fun connect() {
-//        service.connect(device)
+        service.configuration.uuidService = device?.uuids?.get(0)?.uuid ?: UUID.randomUUID()
+        service.configuration.uuidCharacteristic = UUID.randomUUID()
+        service.connect(device)
+        writer = BluetoothWriter(service)
     }
 
     fun disconnect() {
         service.disconnect()
     }
-
-    /*
-         object : BluetoothService.OnBluetoothScanCallback {
-            override fun onDeviceDiscovered(device: BluetoothDevice, rssi: Int) {}
-
-            override fun onStartScan() {}
-
-            override fun onStopScan() {}
-        }*/
 }
