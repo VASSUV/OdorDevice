@@ -32,25 +32,25 @@ object Bluetooth {
         }
     }
 
-    fun scanLeDevice(enable: Boolean, scanFinish : () -> Unit) = async(UI) {
-        bg {
-            if (enable) {
-                mScanning = true
-                bluetoothAdapter.startLeScan(scanCallBack)
-            } else {
-                mScanning = false
-                bluetoothAdapter.stopLeScan(scanCallBack)
-            }
-            if (enable) {
-                Thread.sleep(SCAN_PERIOD)
-                mScanning = false
-                bluetoothAdapter.stopLeScan(scanCallBack)
-            }
-        }.await()
-        scanFinish()
-    }
-
-    fun sendStat() {
-        App.log("""address: ${bluetoothAdapter.address}, name: ${bluetoothAdapter.name}, state: ${bluetoothAdapter.state}""")
-    }
+//    fun scanLeDevice(enable: Boolean, scanFinish : () -> Unit) = async(UI) {
+//        bg {
+//            if (enable) {
+//                mScanning = true
+//                bluetoothAdapter.startLeScan(scanCallBack)
+//            } else {
+//                mScanning = false
+//                bluetoothAdapter.stopLeScan(scanCallBack)
+//            }
+//            if (enable) {
+//                Thread.sleep(SCAN_PERIOD)
+//                mScanning = false
+//                bluetoothAdapter.stopLeScan(scanCallBack)
+//            }
+//        }.await()
+//        scanFinish()
+//    }
+//
+//    fun sendStat() {
+//        App.log("""address: ${bluetoothAdapter.address}, name: ${bluetoothAdapter.name}, state: ${bluetoothAdapter.state}""")
+//    }
 }

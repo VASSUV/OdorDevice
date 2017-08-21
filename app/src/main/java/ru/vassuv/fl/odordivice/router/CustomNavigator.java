@@ -3,7 +3,9 @@ package ru.vassuv.fl.odordivice.router;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import ru.terrakok.cicerone.commands.Command;
 import ru.terrakok.cicerone.commands.Forward;
 import ru.terrakok.cicerone.commands.Replace;
 import ru.terrakok.cicerone.commands.SystemMessage;
+
+import static android.support.v4.app.FragmentManager.POP_BACK_STACK_INCLUSIVE;
 
 public abstract class CustomNavigator implements Navigator {
     private List<String> screenNames = new ArrayList<>();
@@ -70,32 +74,20 @@ public abstract class CustomNavigator implements Navigator {
             }
         } else if (command instanceof Replace) {
             final Replace replace = (Replace) command;
-            if (fragmentManager.getBackStackEntryCount() > 0) {
-                fragmentManager.popBackStackImmediate();
-                fragmentManager
-                        .beginTransaction()
-                        .setCustomAnimations(getEnterAnimation(lastScreenKey, replace.getScreenKey()),
-                                getExitAnimation(lastScreenKey, replace.getScreenKey()),
-                                getPopEnterAnimation(lastScreenKey, replace.getScreenKey()),
-                                getPopExitAnimation(lastScreenKey, replace.getScreenKey()))
-                        .replace(containerId, createFragment(replace.getScreenKey(), replace.getTransitionData()))
-                        .addToBackStack(replace.getScreenKey())
-                        .commit();
-            } else {
-                fragmentManager.popBackStackImmediate();
-                fragmentManager
-                        .beginTransaction()
-                        .setCustomAnimations(getEnterAnimation(lastScreenKey, replace.getScreenKey()),
-                                getExitAnimation(lastScreenKey, replace.getScreenKey()),
-                                getPopEnterAnimation(lastScreenKey, replace.getScreenKey()),
-                                getPopExitAnimation(lastScreenKey, replace.getScreenKey()))
-                        .replace(containerId, createFragment(replace.getScreenKey(), replace.getTransitionData()))
-                        .addToBackStack(replace.getScreenKey())
-                        .commit();
-            }
-
-            if (screenNames.size() > 0)
+            if (screenNames.size() > 0) {
+                final String name = screenNames.get(screenNames.size() - 1);
                 screenNames.remove(screenNames.size() - 1);
+                fragmentManager.popBackStackImmediate(name, POP_BACK_STACK_INCLUSIVE);
+            }
+            fragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(getEnterAnimation(lastScreenKey, replace.getScreenKey()),
+                            getExitAnimation(lastScreenKey, replace.getScreenKey()),
+                            getPopEnterAnimation(lastScreenKey, replace.getScreenKey()),
+                            getPopExitAnimation(lastScreenKey, replace.getScreenKey()))
+                    .replace(containerId, createFragment(replace.getScreenKey(), replace.getTransitionData()))
+                    .addToBackStack(replace.getScreenKey())
+                    .commit();
             screenNames.add(((Replace) command).getScreenKey());
         } else if (command instanceof BackTo) {
             final String key = ((BackTo) command).getScreenKey();

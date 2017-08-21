@@ -10,4 +10,14 @@ interface MainView : MvpView {
     fun finish()
 
     fun setTitle(titleId: Int)
+
+    fun showBackButton()
+
+    fun hideBackButton()
+
+    fun hideKeyBoard()
+
+    fun setElevation()
+
+    fun unSetElevation()
 }

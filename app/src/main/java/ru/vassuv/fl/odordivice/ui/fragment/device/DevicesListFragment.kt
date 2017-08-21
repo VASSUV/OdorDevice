@@ -65,11 +65,6 @@ class DevicesListFragment : MvpAppCompatFragment(), DevicesListView, IFragment {
         presenter.onStart()
     }
 
-    override fun onResume() {
-        super.onResume()
-        presenter.onResume()
-    }
-
     override fun onPause() {
         super.onPause()
         presenter.onPause()

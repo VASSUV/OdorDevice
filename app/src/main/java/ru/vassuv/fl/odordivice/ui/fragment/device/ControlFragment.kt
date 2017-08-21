@@ -12,6 +12,11 @@ import ru.vassuv.fl.odordivice.presentation.presenter.device.ControlPresenter
 import com.arellomobile.mvp.presenter.InjectPresenter
 import ru.vassuv.fl.odordivice.fabric.FrmFabric
 import ru.vassuv.fl.odordivice.fabric.IFragment
+import android.support.design.widget.TabLayout
+import kotlinx.android.synthetic.main.fragment_control.view.*
+import ru.vassuv.fl.odordivice.ui.adapter.PagerAdapter
+import ru.vassuv.fl.odordivice.utils.KeyboardUtils
+
 
 class ControlFragment : MvpAppCompatFragment(), ControlView, IFragment {
     override val type: FrmFabric
@@ -28,8 +33,32 @@ class ControlFragment : MvpAppCompatFragment(), ControlView, IFragment {
     @InjectPresenter
     lateinit var presenter: ControlPresenter
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        presenter.onCreate()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_control, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_control, container, false)
+        val tabLayout = rootView.tabLayout
+        tabLayout.addTab(tabLayout.newTab().setText("Установки"))
+        tabLayout.addTab(tabLayout.newTab().setText("Об устройстве"))
+        tabLayout.tabGravity = TabLayout.GRAVITY_FILL
+
+        val viewPager = rootView.viewPager
+        val adapter = PagerAdapter(childFragmentManager)
+        viewPager.adapter = adapter
+        viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
+        tabLayout.setOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager.currentItem = tab.position
+                KeyboardUtils.hideKeyboard(activity)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+            override fun onTabReselected(tab: TabLayout.Tab) = Unit
+        })
+        return rootView
     }
 }

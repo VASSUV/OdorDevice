@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import ru.vassuv.fl.odordivice.R
+import ru.vassuv.fl.odordivice.service.Statistics
+import ru.vassuv.fl.odordivice.ui.component.EazyHolder
 
 class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     val BLANK_TYPE = 0
@@ -20,8 +22,8 @@ class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val mLeDevices: ArrayList<BluetoothDevice> = ArrayList<BluetoothDevice>()
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
-//        if (viewType == BLANK_TYPE)
-//            return EazyHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_refresh_blank, parent, false))
+        if (viewType == BLANK_TYPE)
+            return EazyHolder(LayoutInflater.from(parent?.context).inflate(R.layout.item_refresh_blank, parent, false))
         return Holder(LayoutInflater.from(parent?.context).inflate(R.layout.item_device, parent, false))
     }
 
@@ -29,10 +31,11 @@ class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return if (position == 0 && mLeDevices.size == 0) BLANK_TYPE else ITEM_TYPE
     }
 
-    override fun getItemCount() = 3//if (mLeDevices.size == 0) 1 else mLeDevices.size
+    override fun getItemCount() = if (mLeDevices.size == 0) 1 else mLeDevices.size
+
+    fun getDeviceCount() = mLeDevices.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        return
         if (position == 0 && mLeDevices.size == 0 || holder !is Holder?) return
 
         val device = mLeDevices[position]
@@ -47,6 +50,7 @@ class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun addDevice(device: BluetoothDevice) {
         if (!mLeDevices.contains(device)) {
+            Statistics.send("Найден: ", device)
             mLeDevices.add(device)
         }
     }
@@ -62,22 +66,22 @@ class LeDeviceListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemId(i: Int): Long {
         return i.toLong()
     }
-
     inner class Holder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
         var deviceName: TextView? = null
+
         var deviceAddress: TextView? = null
 
         init {
             deviceName = itemView?.findViewById(R.id.deviceName)
             deviceAddress = itemView?.findViewById(R.id.deviceAddress)
             itemView?.findViewById<View>(R.id.list_item)?.setOnClickListener {
-                iClickListener?.itemClick(/*mLeDevices[layoutPosition]*/null)
+                iClickListener?.itemClick(mLeDevices[layoutPosition])
             }
         }
 
     }
-
     interface IClickListener {
         fun itemClick(device: BluetoothDevice?)
+
     }
 }

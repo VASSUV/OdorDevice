@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/gray" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/deviceName"
+        style="@style/Widget.AppTheme.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:theme="@style/Widget.AppTheme.TextInputLayout">
+
+        <EditText
+            style="@style/Widget.AppTheme.EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/name"
+            android:lines="1"
+            android:theme="@style/Widget.AppTheme.EditText" />
+
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/deviceAddress"
+        style="@style/Widget.AppTheme.TextInputLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="16dp"
+        android:background="@color/white"
+        android:theme="@style/Widget.AppTheme.TextInputLayout">
+
+        <EditText
+            style="@style/Widget.AppTheme.EditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/address"
+            android:lines="1"
+            android:clickable="false"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:longClickable="false"
+            android:theme="@style/Widget.AppTheme.EditText" />
+
+    </android.support.design.widget.TextInputLayout>
+</LinearLayout>

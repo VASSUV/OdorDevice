@@ -9,7 +9,7 @@ class Logger(var debugMode: Boolean = false, private var tag: String = "MyInstag
         if (debugMode) {
             val varargToString = varargToString(args)
             Log.d(tag, varargToString)
-            Statistics.send(varargToString);
+            Statistics.send(varargToString)
         }
     }
 

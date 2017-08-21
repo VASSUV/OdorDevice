@@ -18,6 +18,7 @@ import ru.vassuv.fl.odordivice.fabric.IFragment
 import ru.vassuv.fl.odordivice.presentation.view.main.MainView
 import ru.vassuv.fl.odordivice.repository.constant.Field
 import ru.vassuv.fl.odordivice.router.CustomNavigator
+import ru.vassuv.fl.odordivice.utils.KeyboardUtils
 import java.io.Serializable
 
 
@@ -88,6 +89,7 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     fun onChangeFragment() {
+
         val newFragmentType = getCurrentFragment()?.type
         if (currentType == newFragmentType || newFragmentType == null) return
         currentType = newFragmentType
@@ -95,18 +97,28 @@ class MainPresenter : MvpPresenter<MainView>() {
         when (currentType) {
             FrmFabric.DEVICE_LIST -> {
                 viewState.setTitle(R.string.title_device_list)
+                viewState.hideBackButton()
+                viewState.setElevation()
             }
             FrmFabric.PASSWORD -> {
                 viewState.setTitle(R.string.title_password)
+                viewState.showBackButton()
+                viewState.setElevation()
             }
             FrmFabric.CHANGE_PASSWORD -> {
                 viewState.setTitle(R.string.title_change_password)
+                viewState.showBackButton()
+                viewState.setElevation()
             }
             FrmFabric.TIME_WORK -> {
                 viewState.setTitle(R.string.title_time_work)
+                viewState.showBackButton()
+                viewState.setElevation()
             }
             FrmFabric.CONTROL -> {
                 viewState.setTitle(R.string.title_control)
+                viewState.showBackButton()
+                viewState.unSetElevation()
             }
             else -> {
             }
